@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createServerSupabase } from '@/lib/supabase-server'
 import PartnerHeader from '@/components/partner/PartnerHeader'
+
+export const metadata: Metadata = {
+  title: 'かずさや発注アプリ',
+}
 
 export default async function PartnerLayout({
   children,

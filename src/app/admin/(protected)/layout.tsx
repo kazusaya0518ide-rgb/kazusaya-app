@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createServerSupabase } from '@/lib/supabase-server'
 import AdminSidebar from '@/components/admin/AdminSidebar'
+
+export const metadata: Metadata = {
+  title: '管理画面 | かずさや',
+}
 
 export default async function AdminLayout({
   children,
@@ -35,7 +40,7 @@ export default async function AdminLayout({
   return (
     <div className="flex h-screen bg-gray-100">
       <AdminSidebar unreadCount={unreadCount ?? 0} adminName={admin.name} />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-14 sm:pt-0">
         {children}
       </main>
     </div>
