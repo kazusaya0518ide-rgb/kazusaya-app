@@ -15,12 +15,22 @@ export default async function PartnerOrdersPage() {
 
   if (!partner) redirect('/partner/login')
 
-  // 取引先に割り当てられた商品を取得（表示順）
-  const { data: partnerProducts } = await supabase
-    .from('partner_products')
-    .select('id, display_order, product:products(id, code, name, spec, price)')
-    .eq('partner_id', partner.id)
-    .order('display_order')
+  // 取引先に割り当てられた商品を取得（表示順・全件）
+  const partnerProducts: any[] = []
+  const pageSize = 1000
+  let offset = 0
+  while (true) {
+    const { data } = await supabase
+      .from('partner_products')
+      .select('id, display_order, product:products(id, code, name, spec, price)')
+      .eq('partner_id', partner.id)
+      .order('display_order')
+      .range(offset, offset + pageSize - 1)
+    if (!data || data.length === 0) break
+    partnerProducts.push(...data)
+    if (data.length < pageSize) break
+    offset += pageSize
+  }
 
   const products = ((partnerProducts ?? [])
     .map((pp) => pp.product)
