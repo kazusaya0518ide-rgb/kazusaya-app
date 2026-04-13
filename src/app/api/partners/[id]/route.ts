@@ -56,3 +56,37 @@ export async function PATCH(
 
   return NextResponse.json({ partner })
 }
+
+export async function DELETE(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const supabase = await createServerSupabase()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: '未認証' }, { status: 401 })
+
+  const service = createServiceSupabase()
+
+  const { data: admin } = await service
+    .from('admins')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!admin) return NextResponse.json({ error: '権限がありません' }, { status: 403 })
+
+  // auth_user_idを取得してAuthユーザーも削除
+  const { data: partner } = await service
+    .from('partners')
+    .select('auth_user_id')
+    .eq('id', id)
+    .single()
+
+  await service.from('partners').delete().eq('id', id)
+
+  if (partner?.auth_user_id) {
+    await service.auth.admin.deleteUser(partner.auth_user_id)
+  }
+
+  return NextResponse.json({ ok: true })
+}

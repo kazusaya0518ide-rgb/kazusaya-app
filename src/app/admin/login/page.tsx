@@ -16,9 +16,12 @@ export default function AdminLoginPage() {
     if (!url || !url.startsWith('http')) return
     const supabase = createBrowserSupabase()
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.replace('/admin/orders')
+      // 取引先メール（@kazusaya.app）以外のセッションのみ管理画面へリダイレクト
+      if (session && !session.user?.email?.endsWith('@kazusaya.app')) {
+        router.replace('/admin/orders')
+      }
     })
-  }, [router])
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

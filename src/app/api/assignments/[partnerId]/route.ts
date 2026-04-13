@@ -11,12 +11,12 @@ export async function GET(
 
   const { data } = await service
     .from('partner_products')
-    .select('id, display_order, product:products(id, name, spec, kana)')
+    .select('id, display_order, product:products(id, name, spec, kana, price)')
     .eq('partner_id', partnerId)
     .order('display_order')
 
   const assigned = (data ?? []).map((row) => {
-    const product = row.product as unknown as { id: string; name: string; spec: string | null; kana: string | null }
+    const product = row.product as unknown as { id: string; name: string; spec: string | null; kana: string | null; price: number | null }
     return { ...product, pp_id: row.id }
   })
 
@@ -56,12 +56,12 @@ export async function POST(
   // 最新リストを返す
   const { data } = await service
     .from('partner_products')
-    .select('id, display_order, product:products(id, name, spec, kana)')
+    .select('id, display_order, product:products(id, name, spec, kana, price)')
     .eq('partner_id', partnerId)
     .order('display_order')
 
   const assigned = (data ?? []).map((row) => {
-    const product = row.product as unknown as { id: string; name: string; spec: string | null; kana: string | null }
+    const product = row.product as unknown as { id: string; name: string; spec: string | null; kana: string | null; price: number | null }
     return { ...product, pp_id: row.id }
   })
 

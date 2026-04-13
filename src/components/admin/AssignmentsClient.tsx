@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Product } from '@/types'
 
 type PartnerBasic = { id: string; name: string }
-type ProductBasic = Pick<Product, 'id' | 'name' | 'spec' | 'kana'>
+type ProductBasic = Pick<Product, 'id' | 'name' | 'spec' | 'kana' | 'price'>
 
 const KANA_ROWS = ['あ', 'か', 'さ', 'た', 'な', 'は', 'ま', 'や', 'ら', 'わ', 'その他']
 
@@ -24,14 +24,25 @@ function getKanaRow(kana: string | null): string {
   return 'その他'
 }
 
+function PriceTag({ price }: { price: number | null }) {
+  if (!price) return null
+  return (
+    <span className="text-xs text-gray-500 font-mono shrink-0 w-16 text-right">
+      ¥{price.toLocaleString()}
+    </span>
+  )
+}
+
 export default function AssignmentsClient({
   partners,
   allProducts,
+  initialPartnerId = '',
 }: {
   partners: PartnerBasic[]
   allProducts: ProductBasic[]
+  initialPartnerId?: string
 }) {
-  const [selectedPartnerId, setSelectedPartnerId] = useState('')
+  const [selectedPartnerId, setSelectedPartnerId] = useState(initialPartnerId)
   const [assigned, setAssigned] = useState<(ProductBasic & { pp_id: string })[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [activeKana, setActiveKana] = useState('あ')
@@ -162,10 +173,14 @@ export default function AssignmentsClient({
                     onChange={() => toggleSelect(p.id)}
                     className="w-4 h-4 accent-blue-500"
                   />
-                  <span className="text-sm text-gray-800">{p.name}</span>
-                  {p.spec && <span className="text-xs text-gray-400">{p.spec}</span>}
+                  <PriceTag price={p.price} />
+                  <span className="text-sm text-gray-800 flex-1">{p.name}</span>
+                  {p.spec && <span className="text-xs text-gray-400 shrink-0">{p.spec}</span>}
                 </label>
               ))}
+              {filtered.length === 0 && (
+                <div className="text-sm text-gray-400 py-4 text-center">該当する商品がありません</div>
+              )}
             </div>
             {selectedIds.size > 0 && (
               <button
@@ -194,12 +209,13 @@ export default function AssignmentsClient({
                       <button onClick={() => moveUp(idx)} disabled={idx === 0} className="text-gray-300 hover:text-gray-600 text-xs leading-none min-h-0 min-w-0">▲</button>
                       <button onClick={() => moveDown(idx)} disabled={idx === assigned.length - 1} className="text-gray-300 hover:text-gray-600 text-xs leading-none min-h-0 min-w-0">▼</button>
                     </div>
-                    <span className="text-sm text-gray-500 w-6 text-right">{idx + 1}</span>
+                    <span className="text-sm text-gray-500 w-6 text-right shrink-0">{idx + 1}</span>
+                    <PriceTag price={p.price} />
                     <span className="flex-1 text-sm text-gray-800">{p.name}</span>
-                    {p.spec && <span className="text-xs text-gray-400">{p.spec}</span>}
+                    {p.spec && <span className="text-xs text-gray-400 shrink-0">{p.spec}</span>}
                     <button
                       onClick={() => removeAssigned(p.pp_id)}
-                      className="text-red-400 text-xs hover:text-red-600 min-h-0 min-w-0"
+                      className="text-red-400 text-xs hover:text-red-600 min-h-0 min-w-0 shrink-0"
                     >
                       削除
                     </button>

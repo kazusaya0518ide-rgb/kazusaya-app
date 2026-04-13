@@ -24,3 +24,19 @@ export async function PATCH(
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ product })
 }
+
+export async function DELETE(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const supabase = await createServerSupabase()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: '未認証' }, { status: 401 })
+
+  const service = createServiceSupabase()
+  const { error } = await service.from('products').delete().eq('id', id)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json({ ok: true })
+}
