@@ -77,7 +77,7 @@ export default function ProductsClient({ products: initial }: { products: Produc
 
   const startEdit = (p: Product) => {
     setEditId(p.id)
-    setEditValues({ spec: p.spec, price: p.price, kana: p.kana })
+    setEditValues({ name: p.name, spec: p.spec, price: p.price, kana: p.kana })
   }
 
   const saveEdit = async (id: string) => {
@@ -300,7 +300,11 @@ export default function ProductsClient({ products: initial }: { products: Produc
                           className="w-4 h-4 accent-blue-500 cursor-pointer"
                         />
                       </td>
-                      <td className="px-4 py-2.5 font-medium text-gray-800">{p.name}</td>
+                      <td className="px-4 py-2.5 font-medium text-gray-800">
+                        {editId === p.id
+                          ? <input value={editValues.name ?? ''} onChange={(e) => setEditValues({ ...editValues, name: e.target.value })} className="border rounded px-2 py-1 text-sm w-48" />
+                          : p.name}
+                      </td>
                       <td className="px-4 py-2.5 text-gray-500">
                         {editId === p.id
                           ? <input value={editValues.spec ?? ''} onChange={(e) => setEditValues({ ...editValues, spec: e.target.value })} className="border rounded px-2 py-1 text-sm w-24" />

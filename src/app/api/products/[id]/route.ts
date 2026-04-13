@@ -16,7 +16,7 @@ export async function PATCH(
 
   const { data: product, error } = await service
     .from('products')
-    .update({ spec: body.spec, price: body.price, kana: body.kana })
+    .update({ name: body.name, spec: body.spec, price: body.price, kana: body.kana })
     .eq('id', id)
     .select()
     .single()
