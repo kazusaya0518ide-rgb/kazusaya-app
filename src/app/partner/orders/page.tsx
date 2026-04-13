@@ -5,7 +5,7 @@ import OrderFormClient from '@/components/partner/OrderFormClient'
 export default async function PartnerOrdersPage() {
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/partner/login')
 
   const { data: partner } = await supabase
     .from('partners')
@@ -13,7 +13,7 @@ export default async function PartnerOrdersPage() {
     .eq('auth_user_id', user.id)
     .single()
 
-  if (!partner) redirect('/login')
+  if (!partner) redirect('/partner/login')
 
   // 取引先に割り当てられた商品を取得（表示順）
   const { data: partnerProducts } = await supabase

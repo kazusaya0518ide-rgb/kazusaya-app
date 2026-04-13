@@ -11,7 +11,7 @@ export default function PartnerHeader({ partnerName }: { partnerName: string }) 
   const handleLogout = async () => {
     const supabase = createBrowserSupabase()
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/partner/login')
   }
 
   return (

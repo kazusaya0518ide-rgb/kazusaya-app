@@ -5,7 +5,7 @@ import HistoryClient from '@/components/partner/HistoryClient'
 export default async function HistoryPage() {
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/partner/login')
 
   const { data: partner } = await supabase
     .from('partners')
@@ -13,7 +13,7 @@ export default async function HistoryPage() {
     .eq('auth_user_id', user.id)
     .single()
 
-  if (!partner) redirect('/login')
+  if (!partner) redirect('/partner/login')
 
   const { data: orders } = await supabase
     .from('orders')

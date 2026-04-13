@@ -15,7 +15,7 @@ export default async function PartnerLayout({
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+  if (!user) redirect('/partner/login')
 
   const { data: partner } = await supabase
     .from('partners')
@@ -24,7 +24,7 @@ export default async function PartnerLayout({
     .eq('is_active', true)
     .single()
 
-  if (!partner) redirect('/login')
+  if (!partner) redirect('/partner/login')
 
   return (
     <div className="min-h-screen bg-gray-50">
