@@ -66,8 +66,9 @@ export default function OrderFormClient({
   const [kanaFilter, setKanaFilter] = useState('')
   const listTopRef = useRef<HTMLDivElement>(null)
 
-  const cartEntries = Object.entries(cart).filter(([, e]) => e.qty > 0)
+  const cartEntries = Object.entries(cart).filter(([, e]) => e.qty !== 0)
   const totalItems = cartEntries.length
+  const returnItems = cartEntries.filter(([, e]) => e.qty < 0).length
   const hasFreq = products.some((p) => p.orderCount > 0)
 
   const setQty = (id: string, qty: number) => {
@@ -400,6 +401,10 @@ export default function OrderFormClient({
         >
           {totalItems === 0
             ? '商品を選んでください'
+            : returnItems > 0 && totalItems === returnItems
+            ? `発注内容を確認する（返品 ${returnItems}品目）`
+            : returnItems > 0
+            ? `発注内容を確認する（${totalItems - returnItems}品目 ＋ 返品${returnItems}品目）`
             : `発注内容を確認する（${totalItems}品目）`}
         </button>
       </div>
