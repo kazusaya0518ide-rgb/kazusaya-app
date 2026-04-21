@@ -15,7 +15,7 @@ export default async function PartnerOrdersPage() {
 
   if (!partner) redirect('/partner/login')
 
-  // 取引先に割り当てられた商品を取得（全件）
+  // 取引先に割り当てられた商品を取得（display_order順・全件）
   const partnerProducts: any[] = []
   const pageSize = 1000
   let offset = 0
@@ -24,6 +24,7 @@ export default async function PartnerOrdersPage() {
       .from('partner_products')
       .select('id, display_order, order_count, product:products(id, code, name, spec, price, kana)')
       .eq('partner_id', partner.id)
+      .order('display_order')
       .range(offset, offset + pageSize - 1)
     if (!data || data.length === 0) break
     partnerProducts.push(...data)
@@ -31,12 +32,11 @@ export default async function PartnerOrdersPage() {
     offset += pageSize
   }
 
-  // 発注回数が多い順 → ゼロは後ろに、ゼロ同士はkana順
+  // あいうえお順（display_order → kana → name）
   const sorted = [...(partnerProducts ?? [])].sort((a, b) => {
-    const ca = a.order_count ?? 0
-    const cb = b.order_count ?? 0
-    if (ca !== cb) return cb - ca  // 発注多い順
-    // 同一order_count（特にゼロ）はkana/name順
+    const da = a.display_order ?? 0
+    const db = b.display_order ?? 0
+    if (da !== db) return da - db
     const ka = (a.product?.kana ?? a.product?.name ?? '')
     const kb = (b.product?.kana ?? b.product?.name ?? '')
     return ka.localeCompare(kb, 'ja')

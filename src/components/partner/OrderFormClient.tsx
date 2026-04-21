@@ -71,7 +71,7 @@ export default function OrderFormClient({
   const hasFreq = products.some((p) => p.orderCount > 0)
 
   const setQty = (id: string, qty: number) => {
-    if (qty <= 0) {
+    if (qty === 0) {
       setCart((prev) => { const n = { ...prev }; delete n[id]; return n })
     } else {
       setCart((prev) => ({ ...prev, [id]: { qty, unit: prev[id]?.unit ?? '個' } }))
@@ -174,14 +174,18 @@ export default function OrderFormClient({
           </div>
           {cartEntries.map(([id, { qty, unit }]) => {
             const p = products.find((x) => x.id === id)!
+            const isReturn = qty < 0
             return (
-              <div key={id} className="flex items-center px-4 py-3.5 border-b border-gray-50 last:border-0 gap-2">
+              <div key={id} className={`flex items-center px-4 py-3.5 border-b border-gray-50 last:border-0 gap-2 ${isReturn ? 'bg-red-50' : ''}`}>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-800 text-sm">{p.name}</div>
+                  <div className={`font-medium text-sm ${isReturn ? 'text-red-700' : 'text-gray-800'}`}>{p.name}</div>
                   {p.spec && <div className="text-xs text-gray-400 mt-0.5">{p.spec}</div>}
                 </div>
-                <div className="shrink-0 bg-blue-50 text-blue-700 font-bold text-sm px-3 py-1 rounded-full">
+                <div className={`shrink-0 font-bold text-sm px-3 py-1 rounded-full ${
+                  isReturn ? 'bg-red-100 text-red-700' : 'bg-blue-50 text-blue-700'
+                }`}>
                   {qty} {unit}
+                  {isReturn && <span className="ml-1 text-xs">（返品）</span>}
                 </div>
               </div>
             )
@@ -299,22 +303,23 @@ export default function OrderFormClient({
             const entry = cart[product.id]
             const qty = entry?.qty ?? 0
             const unit = entry?.unit ?? '個'
-            const inCart = qty > 0
+            const inCart = qty !== 0
+            const isReturn = qty < 0
 
             return (
               <div
                 key={product.id}
-                className={`flex items-center px-3 py-2 transition-colors ${inCart ? 'bg-blue-50' : 'bg-white'}`}
+                className={`flex items-center px-3 py-2 transition-colors ${
+                  isReturn ? 'bg-red-50' : inCart ? 'bg-blue-50' : 'bg-white'
+                }`}
               >
                 {/* 商品情報 */}
                 <div className="flex-1 min-w-0 mr-2 py-0.5">
-                  {product.orderCount > 0 && (
-                    <span className="inline-block text-[10px] text-orange-500 mr-1 leading-none">
-                      ⭐{product.orderCount}回
-                    </span>
-                  )}
-                  <span className={`text-sm font-medium ${inCart ? 'text-blue-800' : 'text-gray-800'}`}>
+                  <span className={`text-sm font-medium ${
+                    isReturn ? 'text-red-700' : inCart ? 'text-blue-800' : 'text-gray-800'
+                  }`}>
                     {product.name}
+                    {isReturn && <span className="ml-1.5 font-bold">{qty}</span>}
                   </span>
                   {product.spec && (
                     <span className="text-xs text-gray-400 ml-1.5">{product.spec}</span>
@@ -336,23 +341,29 @@ export default function OrderFormClient({
 
                   <button
                     onClick={() => setQty(product.id, qty - 1)}
-                    disabled={!inCart}
                     aria-label="減らす"
-                    className="w-10 h-10 rounded-xl border border-gray-200 text-gray-500 text-xl flex items-center justify-center hover:bg-gray-100 disabled:opacity-20 active:scale-90 transition-all touch-manipulation"
+                    className={`w-10 h-10 rounded-xl border text-xl flex items-center justify-center active:scale-90 transition-all touch-manipulation ${
+                      isReturn
+                        ? 'border-red-300 text-red-500 hover:bg-red-100'
+                        : 'border-gray-200 text-gray-500 hover:bg-gray-100'
+                    }`}
                   >−</button>
 
                   <input
                     type="number"
                     inputMode="numeric"
-                    min="0"
                     value={qty === 0 ? '' : qty}
                     onChange={(e) => {
                       const v = e.target.value
-                      setQty(product.id, v === '' ? 0 : Math.max(0, parseInt(v) || 0))
+                      setQty(product.id, v === '' ? 0 : (parseInt(v) || 0))
                     }}
                     placeholder="0"
-                    className={`w-11 h-10 text-center text-sm font-bold rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors ${
-                      inCart ? 'border-blue-400 text-blue-700 bg-white' : 'border-gray-200 text-gray-400 bg-gray-50'
+                    className={`w-11 h-10 text-center text-sm font-bold rounded-xl border focus:outline-none focus:ring-2 transition-colors ${
+                      isReturn
+                        ? 'border-red-400 text-red-600 bg-white focus:ring-red-400'
+                        : inCart
+                        ? 'border-blue-400 text-blue-700 bg-white focus:ring-blue-400'
+                        : 'border-gray-200 text-gray-400 bg-gray-50 focus:ring-blue-400'
                     }`}
                   />
 
