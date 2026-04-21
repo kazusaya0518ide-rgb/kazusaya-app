@@ -49,9 +49,13 @@ create table partner_products (
   partner_id uuid not null references partners(id) on delete cascade,
   product_id uuid not null references products(id) on delete cascade,
   display_order integer default 0,
+  order_count integer not null default 0,  -- 発注回数（頻度ソート用）
   created_at timestamptz default now(),
   unique(partner_id, product_id)
 );
+
+-- ※ 既存DBへの追加マイグレーション（Supabase SQL Editorで実行）:
+-- ALTER TABLE partner_products ADD COLUMN IF NOT EXISTS order_count INTEGER NOT NULL DEFAULT 0;
 
 -- 受注ヘッダ
 create table orders (

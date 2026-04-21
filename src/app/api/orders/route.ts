@@ -48,6 +48,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: itemsError.message }, { status: 400 })
   }
 
+  // 発注回数をインクリメント（partner_products.order_count）
+  // 同時発注の競合はほぼ起きないのでread-modify-writeで対応
+  const productIds = (items as { product_id: string }[]).map((i) => i.product_id)
+  const { data: ppRows } = await service
+    .from('partner_products')
+    .select('id, product_id, order_count')
+    .eq('partner_id', partner_id)
+    .in('product_id', productIds)
+
+  if (ppRows && ppRows.length > 0) {
+    await Promise.all(
+      ppRows.map((pp) =>
+        service
+          .from('partner_products')
+          .update({ order_count: (pp.order_count ?? 0) + 1 })
+          .eq('id', pp.id)
+      )
+    )
+  }
+
   // メール通知（NOTIFY_EMAIL が設定されている場合）
   if (process.env.RESEND_API_KEY && process.env.NOTIFY_EMAIL) {
     try {
