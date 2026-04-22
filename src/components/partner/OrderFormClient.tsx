@@ -64,7 +64,6 @@ export default function OrderFormClient({
   const [submitting, setSubmitting] = useState(false)
   const [search, setSearch] = useState('')
   const [kanaFilter, setKanaFilter] = useState('')
-  const [showReturnFor, setShowReturnFor] = useState<Set<string>>(new Set())
   const listTopRef = useRef<HTMLDivElement>(null)
 
   // 配送行・返品行を別々のラインとして展開
@@ -104,9 +103,6 @@ export default function OrderFormClient({
       }
       return { ...prev, [id]: { ...entry, returnQty: clamped } }
     })
-    if (clamped === 0) {
-      setShowReturnFor((s) => { const ns = new Set(s); ns.delete(id); return ns })
-    }
   }
 
   const setUnit = (id: string, unit: '個' | 'C/S') => {
@@ -116,28 +112,6 @@ export default function OrderFormClient({
     }))
   }
 
-  // 返品行を追加（初期値 -1）
-  const addReturnRow = (id: string) => {
-    setShowReturnFor((s) => { const ns = new Set(s); ns.add(id); return ns })
-    setCart((prev) => {
-      const entry = prev[id] ?? { qty: 0, returnQty: 0, unit: '個' }
-      if (entry.returnQty !== 0) return prev
-      return { ...prev, [id]: { ...entry, returnQty: -1 } }
-    })
-  }
-
-  // 返品行を削除
-  const removeReturnRow = (id: string) => {
-    setShowReturnFor((s) => { const ns = new Set(s); ns.delete(id); return ns })
-    setCart((prev) => {
-      const entry = prev[id]
-      if (!entry) return prev
-      if (entry.qty === 0) {
-        const n = { ...prev }; delete n[id]; return n
-      }
-      return { ...prev, [id]: { ...entry, returnQty: 0 } }
-    })
-  }
 
   const filteredProducts = useMemo(() => {
     if (search.trim()) {
@@ -215,7 +189,7 @@ export default function OrderFormClient({
           ※ キャンセル・変更は担当者（かずさや）へ電話でご連絡ください
         </p>
         <button
-          onClick={() => { setCart({}); setNote(''); setShowReturnFor(new Set()); setStep('form') }}
+          onClick={() => { setCart({}); setNote(''); setStep('form') }}
           className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold text-base hover:bg-blue-700 active:scale-95 transition-all shadow-md touch-manipulation"
         >
           続けて発注する
@@ -372,8 +346,7 @@ export default function OrderFormClient({
             const unit = entry?.unit ?? '個'
             const inCart = qty !== 0
             const returnMag = Math.abs(returnQty)
-            const showReturn = showReturnFor.has(product.id) || returnQty !== 0
-            const canAddReturn = !showReturn
+            const showReturn = returnQty !== 0
 
             return (
               <div key={product.id} className="flex flex-col">
@@ -408,7 +381,14 @@ export default function OrderFormClient({
                     </select>
 
                     <button
-                      onClick={() => setDeliveryQty(product.id, qty - 1)}
+                      onClick={() => {
+                        if (qty > 0) {
+                          setDeliveryQty(product.id, qty - 1)
+                        } else {
+                          // 納品数が0のとき − を押すと返品行を開始
+                          setReturnQty(product.id, returnQty - 1)
+                        }
+                      }}
                       aria-label="減らす"
                       className="w-10 h-10 rounded-xl border border-gray-200 text-gray-500 text-xl flex items-center justify-center active:scale-90 transition-all touch-manipulation hover:bg-gray-100"
                     >−</button>
@@ -435,16 +415,6 @@ export default function OrderFormClient({
                       className="w-10 h-10 rounded-xl bg-blue-600 text-white text-xl flex items-center justify-center hover:bg-blue-700 active:scale-90 transition-all touch-manipulation shadow-sm"
                     >+</button>
 
-                    {/* 返品ボタン：常にレイアウトに存在、+ の右隣を固定してズレを防止 */}
-                    <button
-                      onClick={canAddReturn ? () => addReturnRow(product.id) : undefined}
-                      aria-label="返品を追加"
-                      className={`h-10 px-2 rounded-xl border text-xs font-medium touch-manipulation ml-0.5 transition-all ${
-                        canAddReturn
-                          ? 'border-red-200 text-red-500 hover:bg-red-50 active:scale-90'
-                          : 'invisible pointer-events-none'
-                      }`}
-                    >返品</button>
                   </div>
                 </div>
 
@@ -484,7 +454,7 @@ export default function OrderFormClient({
 
                       {/* 返品行を削除 */}
                       <button
-                        onClick={() => removeReturnRow(product.id)}
+                        onClick={() => setReturnQty(product.id, 0)}
                         aria-label="返品を取消"
                         className="w-8 h-9 flex items-center justify-center text-gray-400 hover:text-gray-600 text-base touch-manipulation ml-0.5"
                       >✕</button>
