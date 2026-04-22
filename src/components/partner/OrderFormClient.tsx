@@ -354,21 +354,29 @@ export default function OrderFormClient({
                 <div className={`flex items-center px-3 py-2 transition-colors ${
                   inCart ? 'bg-blue-50' : 'bg-white'
                 }`}>
-                  {/* 商品情報 */}
+                  {/* 商品情報（左エリア） */}
                   <div className="flex-1 min-w-0 mr-2 py-0.5">
-                    <span className={`text-sm font-medium ${
-                      inCart ? 'text-blue-800' : 'text-gray-800'
-                    }`}>
-                      {product.name}
-                    </span>
-                    {product.spec && (
-                      <span className="text-xs text-gray-400 ml-1.5">{product.spec}</span>
+                    <div>
+                      <span className={`text-sm font-medium ${
+                        inCart ? 'text-blue-800' : 'text-gray-800'
+                      }`}>
+                        {product.name}
+                      </span>
+                      {product.spec && (
+                        <span className="text-xs text-gray-400 ml-1.5">{product.spec}</span>
+                      )}
+                    </div>
+                    {/* 返品ボタン：商品名エリア内に配置、数量ボタンと完全に分離 */}
+                    {!showReturn && (
+                      <button
+                        onClick={() => setReturnQty(product.id, -1)}
+                        className="mt-0.5 text-xs text-red-400 hover:text-red-600 active:scale-95 transition-all touch-manipulation"
+                      >↩ 返品</button>
                     )}
                   </div>
 
-                  {/* 数量操作 — 全要素を常にレイアウトに置き + ボタンの位置を固定 */}
+                  {/* 数量操作（右エリア）— 常に同じ構成でズレなし */}
                   <div className="flex items-center gap-1 shrink-0">
-                    {/* 単位選択：常に表示、未選択時は非表示（スペース確保） */}
                     <select
                       value={unit}
                       onChange={(e) => setUnit(product.id, e.target.value as '個' | 'C/S')}
@@ -381,14 +389,7 @@ export default function OrderFormClient({
                     </select>
 
                     <button
-                      onClick={() => {
-                        if (qty > 0) {
-                          setDeliveryQty(product.id, qty - 1)
-                        } else {
-                          // 納品数が0のとき − を押すと返品行を開始
-                          setReturnQty(product.id, returnQty - 1)
-                        }
-                      }}
+                      onClick={() => setDeliveryQty(product.id, qty - 1)}
                       aria-label="減らす"
                       className="w-10 h-10 rounded-xl border border-gray-200 text-gray-500 text-xl flex items-center justify-center active:scale-90 transition-all touch-manipulation hover:bg-gray-100"
                     >−</button>
@@ -414,7 +415,6 @@ export default function OrderFormClient({
                       aria-label="増やす"
                       className="w-10 h-10 rounded-xl bg-blue-600 text-white text-xl flex items-center justify-center hover:bg-blue-700 active:scale-90 transition-all touch-manipulation shadow-sm"
                     >+</button>
-
                   </div>
                 </div>
 
