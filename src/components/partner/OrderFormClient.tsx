@@ -393,18 +393,19 @@ export default function OrderFormClient({
                     )}
                   </div>
 
-                  {/* 数量操作 */}
+                  {/* 数量操作 — 全要素を常にレイアウトに置き + ボタンの位置を固定 */}
                   <div className="flex items-center gap-1 shrink-0">
-                    {inCart && (
-                      <select
-                        value={unit}
-                        onChange={(e) => setUnit(product.id, e.target.value as '個' | 'C/S')}
-                        className="h-10 text-xs border border-gray-200 rounded-xl px-1.5 text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
-                      >
-                        <option value="個">個</option>
-                        <option value="C/S">C/S</option>
-                      </select>
-                    )}
+                    {/* 単位選択：常に表示、未選択時は非表示（スペース確保） */}
+                    <select
+                      value={unit}
+                      onChange={(e) => setUnit(product.id, e.target.value as '個' | 'C/S')}
+                      className={`h-10 text-xs border border-gray-200 rounded-xl px-1.5 text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white transition-all ${
+                        !inCart ? 'invisible pointer-events-none' : ''
+                      }`}
+                    >
+                      <option value="個">個</option>
+                      <option value="C/S">C/S</option>
+                    </select>
 
                     <button
                       onClick={() => setDeliveryQty(product.id, qty - 1)}
@@ -434,14 +435,16 @@ export default function OrderFormClient({
                       className="w-10 h-10 rounded-xl bg-blue-600 text-white text-xl flex items-center justify-center hover:bg-blue-700 active:scale-90 transition-all touch-manipulation shadow-sm"
                     >+</button>
 
-                    {/* 返品追加ボタン（納品qty > 0 かつ未追加の場合） */}
-                    {canAddReturn && (
-                      <button
-                        onClick={() => addReturnRow(product.id)}
-                        aria-label="返品を追加"
-                        className="h-10 px-2 rounded-xl border border-red-200 text-red-500 text-xs font-medium hover:bg-red-50 active:scale-90 transition-all touch-manipulation ml-0.5"
-                      >返品</button>
-                    )}
+                    {/* 返品ボタン：常にレイアウトに存在、+ の右隣を固定してズレを防止 */}
+                    <button
+                      onClick={canAddReturn ? () => addReturnRow(product.id) : undefined}
+                      aria-label="返品を追加"
+                      className={`h-10 px-2 rounded-xl border text-xs font-medium touch-manipulation ml-0.5 transition-all ${
+                        canAddReturn
+                          ? 'border-red-200 text-red-500 hover:bg-red-50 active:scale-90'
+                          : 'invisible pointer-events-none'
+                      }`}
+                    >返品</button>
                   </div>
                 </div>
 
