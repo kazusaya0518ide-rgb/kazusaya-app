@@ -373,7 +373,7 @@ export default function OrderFormClient({
             const inCart = qty !== 0
             const returnMag = Math.abs(returnQty)
             const showReturn = showReturnFor.has(product.id) || returnQty !== 0
-            const canAddReturn = qty > 0 && !showReturn
+            const canAddReturn = !showReturn
 
             return (
               <div key={product.id} className="flex flex-col">
