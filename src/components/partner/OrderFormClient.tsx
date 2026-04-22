@@ -366,11 +366,11 @@ export default function OrderFormClient({
                         <span className="text-xs text-gray-400 ml-1.5">{product.spec}</span>
                       )}
                     </div>
-                    {/* 返品ボタン：商品名エリア内に配置、数量ボタンと完全に分離 */}
-                    {!showReturn && (
+                    {/* 返品ボタン：納品数 > 0 のときだけ、目立たないグレーで表示 */}
+                    {!showReturn && qty > 0 && (
                       <button
                         onClick={() => setReturnQty(product.id, -1)}
-                        className="mt-0.5 text-xs text-red-400 hover:text-red-600 active:scale-95 transition-all touch-manipulation"
+                        className="mt-0.5 text-xs text-gray-400 hover:text-gray-600 active:scale-95 transition-all touch-manipulation"
                       >↩ 返品</button>
                     )}
                   </div>
@@ -389,7 +389,10 @@ export default function OrderFormClient({
                     </select>
 
                     <button
-                      onClick={() => setDeliveryQty(product.id, qty - 1)}
+                      onClick={() => qty > 0
+                        ? setDeliveryQty(product.id, qty - 1)
+                        : setReturnQty(product.id, returnQty - 1)
+                      }
                       aria-label="減らす"
                       className="w-10 h-10 rounded-xl border border-gray-200 text-gray-500 text-xl flex items-center justify-center active:scale-90 transition-all touch-manipulation hover:bg-gray-100"
                     >−</button>
